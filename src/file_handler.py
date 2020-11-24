@@ -1,13 +1,28 @@
 import os
+import socket
 
 class FileHandler:
 
     def __init__(self):
-        super().__init__()
         self.path = os.getcwd()
 
-    def get_command(self):
-        pass
+        self.host = '127.0.0.1'
+        self.port = 9090
+        self.file_socket = None
+
+    def start_file_socket(self):
+        try:
+            self.file_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.file_socket.connect((self.host, self.port))
+        except:
+            self.file_socket.close()
+
+    def set_rule(self, command):
+        command = command.split().strip()
+        if 'create' in command and len(command) == 2:
+            self.create_dir(command[1])
+        elif 'delete' in command and len(command) == 2:
+            self.delete_dir(command[1])
 
     def create_dir(self, name):
         try:
@@ -24,6 +39,3 @@ class FileHandler:
             print('Success: Folder deleted succesfully')
         except:
             print('Error: The folder may doesn\'t exist or the given path is incorrect.')
-
-    def get_dir_name(self):
-        pass
