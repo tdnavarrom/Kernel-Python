@@ -8,14 +8,15 @@ class FileHandler:
 
         self.host = '127.0.0.1'
         self.port = 9090
-        self.file_socket = None
+        self.file_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def start_file_socket(self):
         try:
-            self.file_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.file_socket.connect((self.host, self.port))
-        except:
-            self.file_socket.close()
+            print("hola desde file")
+        except socket.error as e:
+            print("hola desde file error")
+            print(str(e))
 
     def set_rule(self, command):
         command = command.split().strip()

@@ -1,8 +1,10 @@
+from _thread import start_new_thread
 import socket 
 
 from lexer import check_sintaxis
 from app_handler import AppHandler
 from file_handler import FileHandler
+from gui_handler import GuiHandler
 
 class Kernel:
 
@@ -12,27 +14,30 @@ class Kernel:
         self.kernel_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.kernel_socket.bind((self.host, self.port))
 
-        self.file_module_client = None
-        self.file_module_address = None
+        self.module_client = None
+        self.module_address = None
 
-    def initialize_app_module(self):
-        pass
+        self.modules_socket = {}
 
-    def initialize_file_module(self):
-        fh = FileHandler()
-        fh.start_file_socket()
-        self.kernel_socket.listen(1)
+    def initialize_modules(self):
+        self.kernel_socket.listen(3)
+        while True:
+            self.module_client, self.module_address = self.kernel_socket.accept()
+            start_new_thread(self.module_connection, (self.module_client, self.module_address))
 
-        self.file_module_client, self.file_module_address = self.kernel_socket.accept()
-
-    def initialize_gui_module(self):
-        pass
-
-    def module_connection(self):
+    def module_connection(self, module_client, module_address):
         pass
 
     def stop_connection(self):
         pass
 
-    def write_log(self):
-        pass
+if __name__ == "__main__":
+
+    kernel = Kernel()
+    kernel.initialize_modules()
+
+    fh = FileHandler()
+    fh.start_file_socket()
+
+    gh = GuiHandler()
+    gh.start_gui_socket()
