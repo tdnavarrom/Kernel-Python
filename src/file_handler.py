@@ -17,12 +17,14 @@ class FileHandler:
         except socket.error as e:
             print("hola desde file error")
             print(str(e))
+        finally:
+            self.file_socket.close()
 
     def set_rule(self, command):
-        command = command.split().strip()
-        if 'create' in command and len(command) == 2:
+        command = command.strip().split()
+        if 'create_dir' in command and len(command) == 2:
             self.create_dir(command[1])
-        elif 'delete' in command and len(command) == 2:
+        elif 'rm_dir' in command and len(command) == 2:
             self.delete_dir(command[1])
 
     def create_dir(self, name):

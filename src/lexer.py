@@ -7,7 +7,7 @@ rule_argument_syntaxis = {
     'exit': 1,
     'help': 1,
     'create_dir': 2,
-    'rm_bkt': 2
+    'rm_dir': 2
 }
 
 def check_sintaxis(rule):
