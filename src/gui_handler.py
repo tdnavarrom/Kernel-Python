@@ -58,35 +58,57 @@ class GuiHandler:
         self.window = Tk()
         self.window.title("Eternal OS")
         self.window.geometry('1200x700')
+        self.window.resizable(False, False)
 
-        create_folder_label = Label(self.window, text="Nombre:")
-        create_folder_label.grid(column=30, row=0)
+        self.frame = Frame(master=self.window, width=1200, height=700)
+        self.frame.pack()
 
-        self.create_folder_name = Entry(self.window, width=10)
-        self.create_folder_name.grid(column=32, row=0)
+        self.label_title = Label(self.frame, text="Eternal OS", fg="black", font="Times 30")
+        self.label_title.pack()
+
+        self.wrapper1 = LabelFrame(self.window)
+        self.wrapper1.pack(fill='both', expand="yes", padx=20, pady=10)
+
+        self.wrapper2 = LabelFrame(self.window)
+        self.wrapper2.pack(fill='both', expand="yes", padx=20, pady=10)
+
+        self.wrapper3 = LabelFrame(self.window)
+        self.wrapper3.pack(fill='both', expand="yes", padx=20, pady=10)
+
+        self.create_folder_title = Label(self.wrapper1, text="Crear Carpeta", font="Times 20")
+        self.create_folder_title.place(x=40, y=20, width=300, height=50)
+
+        self.create_folder_label = Label(self.wrapper1, text="Nombre:")
+        self.create_folder_label.place(x=100, y=70, width=50, height=25)
+
+        self.create_folder_name = Entry(self.wrapper1, width=10)
+        self.create_folder_name.place(x=155, y=70, width=50, height=25)
 
         def create_clicked():
             self.create_dir(self.create_folder_name.get())
 
-        create_folder_button = Button(self.window, text="Crear", command=create_clicked)
-        create_folder_button.grid(column=45, row=0)
+        self.create_folder_button = Button(self.wrapper1, text="Crear", command=create_clicked)
+        self.create_folder_button.place(x=210, y=70, width=50, height=25)
 
-        delete_folder_label = Label(self.window, text="Nombre:")
-        delete_folder_label.grid(column=100, row=0)
+        self.delete_folder_title = Label(self.wrapper1, text="Eliminar Carpeta", font="Times 20")
+        self.delete_folder_title.place(x=800, y=20, width=300, height=50)
+        
+        self.delete_folder_label = Label(self.wrapper1, text="Nombre:")
+        self.delete_folder_label.place(x=860, y=70, width=50, height=25)
 
-        self.delete_folder_name = Entry(self.window, width=10)
-        self.delete_folder_name.grid(column=102, row=0)
+        self.delete_folder_name = Entry(self.wrapper1, width=10)
+        self.delete_folder_name.place(x=915, y=70, width=50, height=25)
 
         def delete_clicked():
             self.delete_dir(self.delete_folder_name.get())
 
-        delete_folder_button = Button(self.window, text="Eliminar", command=delete_clicked)
-        delete_folder_button.grid(column=115, row=0)
+        self.delete_folder_button = Button(self.wrapper1, text="Eliminar", command=delete_clicked)
+        self.delete_folder_button.place(x=970, y=70, width=50, height=25)
 
         def quit_clicked():
             self.stop_gui()
 
-        quit_button = Button(self.window, text="Cerrar", command=quit_clicked)
-        quit_button.grid(column=350, row=1200)
+        self.quit_button = Button(self.window, text="Cerrar", command=quit_clicked)
+        self.quit_button.place(x=550, y=600, width=50, height=25)
 
         self.window.mainloop()
