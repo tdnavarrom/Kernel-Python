@@ -14,9 +14,11 @@ class GuiHandler:
         try:
             self.gui_socket.connect((self.host, self.port))
             print("hola desde gui")
+            self.graphical_interface()
         except socket.error as e:
             print("hola desde gui error")
             print(str(e))
+            
 
     def stop_gui(self):
         self.gui_socket.send(('exit').encode('utf-8'))
@@ -24,6 +26,7 @@ class GuiHandler:
 
         if response == 'OK':
             print('Closing Down!! Please close the window now safely')
+            self.gui_socket.close()
 
     def kill_child_app(self, app_pid, child_pid):
         pass

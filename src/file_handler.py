@@ -1,5 +1,6 @@
 import os
 import socket
+from threading import Thread
 
 class FileHandler:
 
@@ -7,18 +8,34 @@ class FileHandler:
         self.path = os.getcwd()
 
         self.host = '127.0.0.1'
-        self.port = 9090
+        self.port = 5555
         self.file_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.file_socket.bind((self.host, self.port))
+
+        self.module_client = None
+        self.module_address = None
 
     def start_file_socket(self):
-        try:
-            self.file_socket.connect((self.host, self.port))
-            print("hola desde file")
-        except socket.error as e:
-            print("hola desde file error")
-            print(str(e))
-        finally:
-            self.file_socket.close()
+        self.file_socket.listen(1)
+        self.module_client, self.module_address = self.file_socket.accept()
+        print('Kernel connected!!..')
+        self.kernel_connection_thread = Thread(target=self.connection, args=())
+        self.kernel_connection_thread.start()
+        self.kernel_connection_thread.join()
+        
+
+    def connection(self):
+        self.connected = True
+        
+
+        while self.connected:
+            print('Waiting kernel instruction.....')
+            rule = self.module_client.recv(1024).decode()
+            print('message from kernel: ', rule)
+            self.set_rule(rule)
+            self.module_client.send('Succesfull!'.encode())
+
+        self.file_socket.close()
 
     def set_rule(self, command):
         command = command.strip().split()
@@ -26,6 +43,8 @@ class FileHandler:
             self.create_dir(command[1])
         elif 'rm_dir' in command and len(command) == 2:
             self.delete_dir(command[1])
+        elif 'exit':
+            self.connected = False
 
     def create_dir(self, name):
         try:
