@@ -1,98 +1,99 @@
+import socket
 from threading import Thread
-import socket 
 
-import lexer as lx
+from gui_module import GUI_MODULE
+from file_module import FILE_MODULE
+from app_module import APP_MODULE
 
 class Kernel:
 
     def __init__(self):
         self.host = '127.0.0.1'
-        
+
         #GUI CONNECTION
-        self.port = 9090
+        self.gui_port = 9090
         self.gui_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.gui_socket.bind((self.host, self.port))
 
         #FILE CONNECTION
-        self.fport = 5555
+        self.file_port = 9091
         self.file_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        #FILE CONNECTION
-        self.aport = 5556
+        #APP CONNECTION
+        self.app_port = 9092
         self.app_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        self.module_client = None
-        self.module_address = None
+        self.msg_structure = "cmd:{}, src:{}, dst:{}, msg:{}"
 
-    
-    def connection_with_modules(self):
-        self.gui_socket.listen(1)
-        self.module_client, self.module_address = self.gui_socket.accept()
-
+    def initialize_connections(self):
         try:
-            self.file_socket.connect((self.host, self.fport))
+            self.gui_socket.connect((self.host, self.gui_port))
+            gui_handle_thread = Thread(target=self.gui_handler, args=())
+            gui_handle_thread.start()
+
+            self.file_socket.connect((self.host, self.file_port))
+
+            self.app_socket.connect((self.host, self.app_port))
+
+            gui_handle_thread.join()
+
         except socket.error as e:
             print(str(e))
 
-        try:
-            self.app_socket.connect((self.host, self.aport))
-        except socket.error as e:
-            print(str(e))
+    def gui_handler(self):
+        connected = True
 
-        self.gui_thread = Thread(target=self.gui_methods_handler, args=(self.module_client,))
-        self.gui_thread.start()     
+        while connected:
+            msg = self.gui_socket.recv(1024).decode()
+            print(msg)
+            arguments = msg.split(',')
+            cmd = arguments[0].split(':')[1]
+            dst = arguments[2].split(':')[1]
+            
+            if cmd == "info":
+                if dst == "file_module":
+                    self.file_socket.send(msg.encode('utf-8'))
+                    response = self.file_socket.recv(1024).decode()
+                    print(response)
+                elif dst == "app_module":
+                    self.app_socket.send(msg.encode('utf-8'))
+                    response = self.app_socket.recv(1024).decode()
+                    print(response)
+                elif dst == "kernel":
+                    if arguments[3].split(':')[1] == "halt":
+                        connected = False
+                        cmd = 'info'
+                        origin = 'kernel'
+                        msg = 'halt'
+                        self.file_socket.send((self.msg_structure.format(cmd, origin, 'file_module', msg)).encode('utf-8'))
+                        self.app_socket.send((self.msg_structure.format(cmd, origin, 'app_module', msg)).encode('utf-8'))
+                        self.file_socket.close()
+                        self.app_socket.close()
+                        self.gui_socket.close()
 
-
-        self.gui_thread.join()
-        
-    
-    def gui_methods_handler(self, module_client):
-        
-        self.connected = True
-
-        while self.connected:
-            print('Connection of GUI has been stablished')
-
-            rule = module_client.recv(1024).decode()
-            status = lx.check_sintaxis(rule)
-
-            module_client.send(status.encode())
-
-            if status == 'OK':
-                if rule == 'exit':
-                    self.stop_connection(rule)    
-                
-                elif 'rm_dir' in rule or 'create_dir' in rule:
-                    self.file_thread = Thread(target=self.file_methods_handler, args=(rule,))
-                    self.file_thread.start()
-                    self.file_thread.join()
-                elif rule == 'create_app' or rule == 'create_child':
-                    pass
-                else:
-                    print('rule not found ', rule)
-
-        
-        module_client.close()
-    
-    def file_methods_handler(self, rule):
-        
-        self.file_socket.send(rule.encode())
-        response = self.file_socket.recv(1024).decode()
-
-        print(response)
-
-    def app_handler(self, rule):
-        self.app_socket.send(rule.encode())
-        response = self.app_socket.recv(1024).decode()
-
-        print(response)
+            elif cmd == "send":    
+                pass
+            elif cmd == "error":
+                pass
 
 
-    def stop_connection(self, rule):
+if __name__ == "__main__":
+    gui_module = GUI_MODULE()
+    gui_thread = Thread(target=gui_module.start_gui_socket, args=())
+    gui_thread.start()
 
-        print('Shutting down!..')
-        self.connected = False  
-        self.file_socket.send(rule.encode())
-        self.file_socket.send(rule.encode())
-        self.file_socket.close()
-        self.app_socket.close()
+    file_module = FILE_MODULE()
+    file_thread = Thread(target=file_module.start_file_socket, args=())
+    file_thread.start()
+
+    app_module = APP_MODULE()
+    app_thread = Thread(target=app_module.start_app_socket, args=())
+    app_thread.start()
+
+    kernel_module = Kernel()
+    kernel_thread = Thread(target=kernel_module.initialize_connections, args=())
+    kernel_thread.start()
+
+    file_thread.join()
+    app_thread.join()
+    gui_thread.join()
+    kernel_thread.join()

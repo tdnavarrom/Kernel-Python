@@ -1,6 +1,18 @@
-import time
+import tkinter
+import os
 
+class AppExample:
 
-while True:
-    print('Hola Mundo!')
-    time.sleep(10)
+    def __init__(self):
+        self.pid = os.getpid()
+        self.ppid = os.getppid()
+
+        self.graphic()
+        
+
+    def fork_this_one(self):
+        os.fork()
+
+    def graphic(self):
+        print('Hola mundo')
+        print('App: ---> %s' % (self.pid, self.ppid))
