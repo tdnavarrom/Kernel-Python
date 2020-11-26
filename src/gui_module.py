@@ -119,26 +119,46 @@ class GUI_MODULE:
         self.wrapper2 = LabelFrame(self.window)
         self.wrapper2.pack(fill='both', expand="yes", padx=20, pady=10)
 
+        self.app_module_title = Label(self.wrapper2, text="Modulo de Aplicacion", font="Times 20")
+        self.app_module_title.place(x=400, y=10, width=300, height=50)
+
+        self.run_parent_app_button = Button(self.wrapper2, text="App Padre")
+        self.run_parent_app_button.place(x=200, y=80, width=150, height=25)
+
+        self.run_child_app_button = Button(self.wrapper2, text="App Hijo")
+        self.run_child_app_button.place(x=400, y=80, width=150, height=25)
+
+        self.kill_process_label = Label(self.wrapper2, text="Pid")
+        self.kill_process_label.place(x=600, y=80, width=50, height=25)
+
+        self.kill_process_name = Entry(self.wrapper2, width=10)
+        self.kill_process_name.place(x=660, y=80, width=50, height=25)
+
+        def kill_clicked():
+            pass
+
+        self.kill_process_button = Button(self.wrapper2, text="Matar", command=kill_clicked)
+        self.kill_process_button.place(x=720, y=80, width=50, height=25)
+
         # Wrapper 3
         self.wrapper3 = LabelFrame(self.window)
         self.wrapper3.pack(fill='both', expand="yes", padx=20, pady=10)
 
-        self.messages_gui_kernel_title = Label(self.wrapper3, text="Gui Messages", font="Times 20")
+        self.messages_gui_kernel_title = Label(self.wrapper3, text="Mensajes Gui", font="Times 20")
         self.messages_gui_kernel_title.place(x=40, y=20, width=300, height=50)
 
         self.messages_gui_kernel = StringVar()
         self.messages_gui_kernel_label = Label(self.wrapper3, textvariable=self.messages_gui_kernel)
         self.messages_gui_kernel_label.place(x=0, y=80, width=400, height=30)
 
-        self.messages_file_kernel_title = Label(self.wrapper3, text="File Messages", font="Times 20")
+        self.messages_file_kernel_title = Label(self.wrapper3, text="Mensajes File", font="Times 20")
         self.messages_file_kernel_title.place(x=420, y=20, width=300, height=50)
 
         self.messages_file_kernel = StringVar()
-        self.messages_file_kernel.set("Hola")
         self.messages_file_kernel_label = Label(self.wrapper3, textvariable=self.messages_file_kernel)
         self.messages_file_kernel_label.place(x=500, y=80, width=100, height=30)
 
-        self.messages_app_kernel_title = Label(self.wrapper3, text="App Messages", font="Times 20")
+        self.messages_app_kernel_title = Label(self.wrapper3, text="Mensajes App", font="Times 20")
         self.messages_app_kernel_title.place(x=860, y=20, width=200, height=50)
 
         # Wrapper 4
