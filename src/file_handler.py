@@ -18,7 +18,7 @@ class FileHandler:
     def start_file_socket(self):
         self.file_socket.listen(1)
         self.module_client, self.module_address = self.file_socket.accept()
-        print('Kernel connected!!..')
+        print('File --> Kernel connected!!..')
         self.kernel_connection_thread = Thread(target=self.connection, args=())
         self.kernel_connection_thread.start()
         self.kernel_connection_thread.join()
@@ -29,9 +29,9 @@ class FileHandler:
         
 
         while self.connected:
-            print('Waiting kernel instruction.....')
+            print('File --> Waiting kernel instruction.....')
             rule = self.module_client.recv(1024).decode()
-            print('message from kernel: ', rule)
+            print('File --> message from kernel: ', rule)
             self.set_rule(rule)
             self.module_client.send('Succesfull!'.encode())
 
@@ -50,14 +50,14 @@ class FileHandler:
         try:
             full_path = os.path.join(self.path, name)
             os.mkdir(full_path)
-            print('Success: Folder created succesfully')
+            print('File --> Success: Folder created succesfully')
         except:
-            print('Error: The folder may already exist or the given path is incorrect.')
+            print('File --> Error: The folder may already exist or the given path is incorrect.')
 
     def delete_dir(self, name):
         try:
             full_path = os.path.join(self.path, name)
             os.rmdir(full_path)
-            print('Success: Folder deleted succesfully')
+            print('File --> Success: Folder deleted succesfully')
         except:
-            print('Error: The folder may doesn\'t exist or the given path is incorrect.')
+            print('File --> Error: The folder may doesn\'t exist or the given path is incorrect.')

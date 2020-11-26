@@ -17,6 +17,10 @@ class Kernel:
         self.fport = 5555
         self.file_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+        #FILE CONNECTION
+        self.aport = 5556
+        self.app_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
         self.module_client = None
         self.module_address = None
 
@@ -30,6 +34,11 @@ class Kernel:
         except socket.error as e:
             print(str(e))
 
+        try:
+            self.app_socket.connect((self.host, self.aport))
+        except socket.error as e:
+            print(str(e))
+
         self.gui_thread = Thread(target=self.gui_methods_handler, args=(self.module_client,))
         self.gui_thread.start()     
 
@@ -39,9 +48,9 @@ class Kernel:
     
     def gui_methods_handler(self, module_client):
         
-        connected = True
+        self.connected = True
 
-        while connected:
+        while self.connected:
             print('Connection of GUI has been stablished')
 
             rule = module_client.recv(1024).decode()
@@ -51,14 +60,14 @@ class Kernel:
 
             if status == 'OK':
                 if rule == 'exit':
-                    print('Shutting down!..')
-                    connected = False
-                    self.file_socket.close()
+                    self.stop_connection(rule)    
                 
                 elif 'rm_dir' in rule or 'create_dir' in rule:
                     self.file_thread = Thread(target=self.file_methods_handler, args=(rule,))
                     self.file_thread.start()
                     self.file_thread.join()
+                elif rule == 'create_app' or rule == 'create_child':
+                    pass
                 else:
                     print('rule not found ', rule)
 
@@ -72,6 +81,18 @@ class Kernel:
 
         print(response)
 
+    def app_handler(self, rule):
+        self.app_socket.send(rule.encode())
+        response = self.app_socket.recv(1024).decode()
 
-    def stop_connection(self):
-        pass
+        print(response)
+
+
+    def stop_connection(self, rule):
+
+        print('Shutting down!..')
+        self.connected = False  
+        self.file_socket.send(rule.encode())
+        self.file_socket.send(rule.encode())
+        self.file_socket.close()
+        self.app_socket.close()
