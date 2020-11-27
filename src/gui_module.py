@@ -38,11 +38,32 @@ class GUI_MODULE:
         self.gui_client.close()
         self.window.destroy()
 
-    def kill_child_app(self, app_pid, child_pid):
-        pass
+    def create_app(self):
+        print('Creating parent app')
+        cmd = 'info'
+        origin = 'gui_module'
+        destiny = 'app_module'
+        msg = 'create_app'
+        self.gui_client.send(self.msg_structure.format(cmd, origin, destiny, msg).encode('utf-8'))
+        self.messages_gui_kernel.set(self.msg_structure.format(cmd, origin, destiny, msg))
+
+    def create_child(self):
+        print('Creating child app')
+        cmd = 'info'
+        origin = 'gui_module'
+        destiny = 'app_module'
+        msg = 'create_child'
+        self.gui_client.send(self.msg_structure.format(cmd, origin, destiny, msg).encode('utf-8'))
+        self.messages_gui_kernel.set(self.msg_structure.format(cmd, origin, destiny, msg))
 
     def kill_app(self, app_pid):
-        pass
+        print('Killing process: ', app_pid)
+        cmd = 'info'
+        origin = 'gui_module'
+        destiny = 'app_module'
+        msg = 'kill_app ' + str(app_pid)
+        self.gui_client.send(self.msg_structure.format(cmd, origin, destiny, msg).encode('utf-8'))
+        self.messages_gui_kernel.set(self.msg_structure.format(cmd, origin, destiny, msg))
 
     def create_dir(self, dir_name):
         print('Creating Dir')
@@ -122,10 +143,16 @@ class GUI_MODULE:
         self.app_module_title = Label(self.wrapper2, text="Modulo de Aplicacion", font="Times 20")
         self.app_module_title.place(x=400, y=10, width=300, height=50)
 
-        self.run_parent_app_button = Button(self.wrapper2, text="App Padre")
+        def create_app_clicked():
+            self.create_app()
+
+        self.run_parent_app_button = Button(self.wrapper2, text="App Padre", command=create_app_clicked)
         self.run_parent_app_button.place(x=200, y=80, width=150, height=25)
 
-        self.run_child_app_button = Button(self.wrapper2, text="App Hijo")
+        def create_child_clicked():
+            self.create_child()
+
+        self.run_child_app_button = Button(self.wrapper2, text="App Hijo", command=create_child_clicked)
         self.run_child_app_button.place(x=400, y=80, width=150, height=25)
 
         self.kill_process_label = Label(self.wrapper2, text="Pid")
@@ -135,7 +162,8 @@ class GUI_MODULE:
         self.kill_process_name.place(x=660, y=80, width=50, height=25)
 
         def kill_clicked():
-            pass
+            self.kill_app(self.kill_process_name.get())
+            self.kill_process_name.delete(0, END)
 
         self.kill_process_button = Button(self.wrapper2, text="Matar", command=kill_clicked)
         self.kill_process_button.place(x=720, y=80, width=50, height=25)

@@ -95,5 +95,6 @@ if __name__ == "__main__":
 
     file_thread.join()
     app_thread.join()
-    gui_thread.join()
     kernel_thread.join()
+    gui_thread.join()
+   

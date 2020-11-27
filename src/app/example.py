@@ -4,15 +4,15 @@ import os
 class AppExample:
 
     def __init__(self):
+        print('App instance created')
         self.pid = os.getpid()
         self.ppid = os.getppid()
 
-        self.graphic()
-        
-
-    def fork_this_one(self):
-        os.fork()
-
     def graphic(self):
-        print('Hola mundo')
-        print('App: ---> %s' % (self.pid, self.ppid))
+        print('App: ---> pid: %s, parent: %s' %(self.pid, self.ppid))
+
+
+if __name__ == "__main__":
+    AppExample().graphic()
+    while True:
+        pass
