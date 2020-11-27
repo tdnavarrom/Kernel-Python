@@ -1,6 +1,6 @@
 import os
 import socket
-import signal
+import psutil
 import subprocess
 import platform
 from app.example import AppExample
@@ -72,7 +72,7 @@ class APP_MODULE:
             
 
     def create_child(self):
-        if self.parent_pid != None:
+        if len(self.parent_pid) != 0:
             system = platform.system()
             if system == "Windows":
                 parent = subprocess.Popen('python app\example.py', cwd=os.path.dirname(os.path.realpath(__file__)))
@@ -86,16 +86,21 @@ class APP_MODULE:
     def delete_app(self, pid):
 
         if pid in self.parent_pid:
-            os.kill(pid, signal.SIGTERM)
+            p = psutil.Process(pid)
+            p.terminate()
             if len(self.child_pids) != 0:
+                print(self.child_pids)
                 for i in self.child_pids:
-                    os.kill(i, signal.SIGTERM)
-                    self.child_pids.remove(i)
+                    p_c = psutil.Process(i)
+                    p_c.terminate()
                     print('se murio el hijo: ', i)
+                for i in self.child_pids:
+                    self.child_pids.remove(i)
             self.parent_pid.remove(pid)
             print('Se murio el padre : ', pid)
         elif pid in self.child_pids:
-            os.kill(pid, signal.SIGTERM)
+            p = psutil.Process(pid)
+            p.terminate()
             print('se murio el hijo: ', pid)
             self.child_pids.remove(pid)
         else:
