@@ -2,6 +2,7 @@ import os
 import socket
 import signal
 import subprocess
+import platform
 from app.example import AppExample
 
 class APP_MODULE:
@@ -58,8 +59,12 @@ class APP_MODULE:
             pass
 
     def create_app(self):
-        parent = subprocess.Popen(['python', 'app/example.py'])
-        
+        system = platform.system()
+        if system == "Windows":
+            parent = subprocess.Popen('python app\example.py', cwd=os.path.dirname(os.path.realpath(__file__)))
+        else:
+            parent = subprocess.Popen(['python', 'app/example.py'])
+
         if len(self.parent_pid) == 0:
             self.parent_pid.append(parent.pid)
             print('pid del padre: ', parent.pid)
@@ -68,7 +73,11 @@ class APP_MODULE:
 
     def create_child(self):
         if self.parent_pid != None:
-            parent = subprocess.Popen(['python', 'app/example.py'])
+            system = platform.system()
+            if system == "Windows":
+                parent = subprocess.Popen('python app\example.py', cwd=os.path.dirname(os.path.realpath(__file__)))
+            else:
+                parent = subprocess.Popen(['python', 'app/example.py'])
             self.child_pids.append(parent.pid)
             print('pid del hijo: ', parent.pid)
         else:
@@ -78,12 +87,16 @@ class APP_MODULE:
 
         if pid in self.parent_pid:
             os.kill(pid, signal.SIGTERM)
-            for i in self.child_pids:
-                os.kill(i, signal.SIGTERM)
-                print('se murio el hijo: ', pid)
+            if len(self.child_pids) != 0:
+                for i in self.child_pids:
+                    os.kill(i, signal.SIGTERM)
+                    self.child_pids.remove(i)
+                    print('se murio el hijo: ', i)
+            self.parent_pid.remove(pid)
             print('Se murio el padre : ', pid)
         elif pid in self.child_pids:
             os.kill(pid, signal.SIGTERM)
             print('se murio el hijo: ', pid)
+            self.child_pids.remove(pid)
         else:
             print('Error: no hay un proceso con ese nombre')

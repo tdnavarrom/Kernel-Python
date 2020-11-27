@@ -1,4 +1,4 @@
-import tkinter
+from tkinter import *
 import os
 
 class AppExample:
@@ -6,13 +6,18 @@ class AppExample:
     def __init__(self):
         print('App instance created')
         self.pid = os.getpid()
-        self.ppid = os.getppid()
 
     def graphic(self):
-        print('App: ---> pid: %s, parent: %s' %(self.pid, self.ppid))
+        window = Tk()
+        window.title("App")
+        window.geometry('600x300')
+        window.resizable(False, False)
 
+        label = Label(window, text="PID: " + str(self.pid), font="Times 20")
+        label.place(x=150, y=100, width=300, height=60)
+
+        window.mainloop()
+        #print('App: ---> pid: %s, parent: %s' %(self.pid, self.ppid))
 
 if __name__ == "__main__":
     AppExample().graphic()
-    while True:
-        pass
