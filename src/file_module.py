@@ -1,6 +1,7 @@
 import os
 import socket
 from threading import Thread
+from datetime import datetime
 
 class FILE_MODULE:
 
@@ -14,6 +15,8 @@ class FILE_MODULE:
 
         self.file_client = None
         self.file_address = None
+
+        self.msg_structure = "cmd:{}, src:{}, dst:{}, msg:{}"
 
     def start_file_socket(self):
         connected = False
@@ -30,8 +33,8 @@ class FILE_MODULE:
         self.connected = True
 
         while self.connected:
-            self.rule = self.file_client.recv(1024).decode()
-            command = self.rule.split(',')[3].split(':')[1].split()[0]
+            self.rule = self.file_client.recv(1024).decode('utf-8')
+            command = self.rule.split(',')[3].split(':', 1)[1].split()[0]
             print('message from kernel: ', command)
             self.set_rule(command)
 
@@ -47,18 +50,35 @@ class FILE_MODULE:
         elif 'halt' in command:
             self.connected = False
 
+    #Aqui tambien puede fallar
     def create_dir(self, name):
         try:
             full_path = os.path.join(self.path, name)
             os.mkdir(full_path)
-            self.file_client.send('Success create_dir'.encode('utf-8'))
+            cmd = 'send'
+            origin = 'file_module'
+            destiny = 'gui_module'
+            msg = ' Log: ' + str(datetime.now()) + '-> success create_dir ' + name
+            self.file_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode())
         except:
-            self.file_client.send('Failed create_dir'.encode('utf-8'))
+            cmd = 'send'
+            origin = 'file_module'
+            destiny = 'gui_module'
+            msg = ' Log: ' + str(datetime.now()) + '-> failed create_dir ' + name
+            self.file_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode())
 
     def delete_dir(self, name):
         try:
             full_path = os.path.join(self.path, name)
             os.rmdir(full_path)
-            self.file_client.send('Success delete_dir'.encode('utf-8'))
+            cmd = 'send'
+            origin = 'file_module'
+            destiny = 'gui_module'
+            msg = ' Log: ' + str(datetime.now()) + '-> success delete_dir ' + name
+            self.file_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode())
         except:
-            self.file_client.send('Failed delete_dir'.encode('utf-8'))
+            cmd = 'send'
+            origin = 'file_module'
+            destiny = 'gui_module'
+            msg = ' Log: ' + str(datetime.now()) + '-> failed delete_dir ' + name
+            self.file_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode())

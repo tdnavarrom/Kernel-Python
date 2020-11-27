@@ -26,7 +26,22 @@ class GUI_MODULE:
             if(self.gui_client != None):
                 connected = True
         print('Gui socket has stablished a connection with kernel')
-        self.grapical_interface()
+
+        gui_graphic_thread = Thread(target=self.grapical_interface, args=())
+        gui_graphic_thread.start()
+
+        gui_msg_thread = Thread(target=self.recv_messages, args=())
+        gui_msg_thread.start()
+
+        gui_graphic_thread.join()
+        gui_msg_thread.join()
+
+    def recv_messages(self):
+        while True:
+            response = self.gui_client.recv(1024).decode('utf-8')
+            origin = response.split(',')[1].split(':')[1]
+            if origin == "file_module":
+                self.messages_file_kernel.set(response)
 
     def stop_gui(self):
         print('Stopping gui')
@@ -34,7 +49,7 @@ class GUI_MODULE:
         origin = 'gui_module'
         destiny = 'kernel'
         msg = 'halt'
-        self.gui_client.send(self.msg_structure.format(cmd, origin, destiny, msg).encode('utf-8'))
+        self.gui_client.send(self.msg_structure.format(cmd, origin, destiny, msg).encode())
         self.gui_client.close()
         self.window.destroy()
 
@@ -44,7 +59,7 @@ class GUI_MODULE:
         origin = 'gui_module'
         destiny = 'app_module'
         msg = 'create_app'
-        self.gui_client.send(self.msg_structure.format(cmd, origin, destiny, msg).encode('utf-8'))
+        self.gui_client.send(self.msg_structure.format(cmd, origin, destiny, msg).encode())
         self.messages_gui_kernel.set(self.msg_structure.format(cmd, origin, destiny, msg))
 
     def create_child(self):
@@ -53,7 +68,7 @@ class GUI_MODULE:
         origin = 'gui_module'
         destiny = 'app_module'
         msg = 'create_child'
-        self.gui_client.send(self.msg_structure.format(cmd, origin, destiny, msg).encode('utf-8'))
+        self.gui_client.send(self.msg_structure.format(cmd, origin, destiny, msg).encode())
         self.messages_gui_kernel.set(self.msg_structure.format(cmd, origin, destiny, msg))
 
     def kill_app(self, app_pid):
@@ -62,16 +77,18 @@ class GUI_MODULE:
         origin = 'gui_module'
         destiny = 'app_module'
         msg = 'kill_app ' + str(app_pid)
-        self.gui_client.send(self.msg_structure.format(cmd, origin, destiny, msg).encode('utf-8'))
+        self.gui_client.send(self.msg_structure.format(cmd, origin, destiny, msg).encode())
         self.messages_gui_kernel.set(self.msg_structure.format(cmd, origin, destiny, msg))
 
+
+    # AQUI puede fallar
     def create_dir(self, dir_name):
         print('Creating Dir')
         cmd = 'info'
         origin = 'gui_module'
         destiny = 'file_module'
         msg = 'create_dir ' + str(dir_name)
-        self.gui_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode('utf-8'))
+        self.gui_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode())
         self.messages_gui_kernel.set(self.msg_structure.format(cmd, origin, destiny, msg))
 
     def delete_dir(self, dir_name):
@@ -80,7 +97,7 @@ class GUI_MODULE:
         origin = 'gui_module'
         destiny = 'file_module'
         msg = 'delete_dir ' + str(dir_name)
-        self.gui_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode('utf-8'))
+        self.gui_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode())
         self.messages_gui_kernel.set(self.msg_structure.format(cmd, origin, destiny, msg))
 
     def get_log(self):
@@ -100,7 +117,7 @@ class GUI_MODULE:
         self.label_title = Label(self.frame1, text="Eternal OS", fg="black", font="Times 30")
         self.label_title.pack()
 
-        # Wrapper 1
+        # Wrapper 1 - Folder creation
         self.wrapper1 = LabelFrame(self.window)
         self.wrapper1.pack(fill='both', expand="yes", padx=20, pady=10)
 
@@ -136,7 +153,7 @@ class GUI_MODULE:
         self.delete_folder_button = Button(self.wrapper1, text="Eliminar", command=delete_clicked)
         self.delete_folder_button.place(x=970, y=70, width=50, height=25)
 
-        # Wrapper 2
+        # Wrapper 2 - Application Module
         self.wrapper2 = LabelFrame(self.window)
         self.wrapper2.pack(fill='both', expand="yes", padx=20, pady=10)
 
@@ -168,7 +185,7 @@ class GUI_MODULE:
         self.kill_process_button = Button(self.wrapper2, text="Matar", command=kill_clicked)
         self.kill_process_button.place(x=720, y=80, width=50, height=25)
 
-        # Wrapper 3
+        # Wrapper 3 - Messages Module
         self.wrapper3 = LabelFrame(self.window)
         self.wrapper3.pack(fill='both', expand="yes", padx=20, pady=10)
 
@@ -176,20 +193,20 @@ class GUI_MODULE:
         self.messages_gui_kernel_title.place(x=40, y=20, width=300, height=50)
 
         self.messages_gui_kernel = StringVar()
-        self.messages_gui_kernel_label = Label(self.wrapper3, textvariable=self.messages_gui_kernel)
+        self.messages_gui_kernel_label = Label(self.wrapper3, textvariable=self.messages_gui_kernel, font="Times 7")
         self.messages_gui_kernel_label.place(x=0, y=80, width=400, height=30)
 
         self.messages_file_kernel_title = Label(self.wrapper3, text="Mensajes File", font="Times 20")
         self.messages_file_kernel_title.place(x=420, y=20, width=300, height=50)
 
         self.messages_file_kernel = StringVar()
-        self.messages_file_kernel_label = Label(self.wrapper3, textvariable=self.messages_file_kernel)
-        self.messages_file_kernel_label.place(x=500, y=80, width=100, height=30)
+        self.messages_file_kernel_label = Label(self.wrapper3, textvariable=self.messages_file_kernel, font="Times 7")
+        self.messages_file_kernel_label.place(x=350, y=80, width=500, height=30)
 
         self.messages_app_kernel_title = Label(self.wrapper3, text="Mensajes App", font="Times 20")
         self.messages_app_kernel_title.place(x=860, y=20, width=200, height=50)
 
-        # Wrapper 4
+        # Wrapper 4 - Close Button
         def quit_clicked():
             self.stop_gui()
 
