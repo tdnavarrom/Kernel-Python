@@ -1,7 +1,2 @@
 src/__pychache__/
-src/__pycache__/file_handler.cpython-38.pyc
-src/__pycache__/gui_handler.cpython-38.pyc
-src/__pycache__/kernel.cpython-38.pyc
-src/__pycache__/lexer.cpython-38.pyc
-src/__pycache__/app_handler.cpython-38.pyc
-src/app/__pycache__/example.cpython-38.pyc
+src/app/__pycache__/
