@@ -16,7 +16,20 @@ class FILE_MODULE:
         self.file_client = None
         self.file_address = None
 
+        self.writer = None
+
         self.msg_structure = "cmd:{}, src:{}, dst:{}, msg:{}"
+
+        self.initialize_log()
+
+    def initialize_log(self):
+        folder_name = 'transactional_log'
+        try:
+            if (not os.path.isdir(os.path.join(self.path, folder_name))):
+                os.mkdir(os.path.join(self.path, folder_name))
+                self.writer = open(os.path.join(self.path, folder_name, 'log.txt'), 'w')
+        except:
+            print('Error')
 
     def start_file_socket(self):
         connected = False
@@ -47,10 +60,12 @@ class FILE_MODULE:
         elif 'delete_dir' in command:
             file_name = self.rule.split(',')[3].split(':')[1].split()[1]
             self.delete_dir(file_name)
+        elif 'Log' in command:
+            self.write_log(self.rule)
         elif 'halt' in command:
+            self.writer.close()
             self.connected = False
 
-    #Aqui tambien puede fallar
     def create_dir(self, name):
         try:
             full_path = os.path.join(self.path, name)
@@ -81,4 +96,14 @@ class FILE_MODULE:
             origin = 'file_module'
             destiny = 'gui_module'
             msg = ' Log: ' + str(datetime.now()) + '-> failed delete_dir ' + name
+            self.file_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode())
+
+    def write_log(self, command):
+        try:
+            self.writer.write(command + '\n')
+        except:
+            cmd = 'send'
+            origin = 'file_module'
+            destiny = 'gui_module'
+            msg = ' Log: ' + str(datetime.now()) + '-> failed write_log '
             self.file_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode())

@@ -4,6 +4,7 @@ import psutil
 import subprocess
 import platform
 from app.example import AppExample
+from datetime import datetime
 
 class APP_MODULE:
 
@@ -20,6 +21,8 @@ class APP_MODULE:
 
         self.parent_pid = []
         self.child_pids = []
+
+        self.msg_structure = "cmd:{}, src:{}, dst:{}, msg:{}"
 
     def start_app_socket(self):
         connected = False
@@ -40,7 +43,6 @@ class APP_MODULE:
             command = self.rule.split(',')[3].split(':')[1]
             print('message from kernel: ', command)
             self.set_rule(command)
-            self.app_client.send('Executing instruction!.'.encode())
 
         self.app_client.close()
 
@@ -67,21 +69,38 @@ class APP_MODULE:
 
         if len(self.parent_pid) == 0:
             self.parent_pid.append(parent.pid)
-            print('pid del padre: ', parent.pid)
-        else: print('Ya hay un proceso padre creado')
+            cmd = 'send'
+            origin = 'app_module'
+            destiny = 'gui_module'
+            msg = ' Log: ' + str(datetime.now()) + '-> success create_parent_app ' + str(parent.pid)
+            self.app_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode())
+        else:
+            cmd = 'send'
+            origin = 'app_module'
+            destiny = 'gui_module'
+            msg = ' Log: ' + str(datetime.now()) + '-> failed create_parent_app '
+            self.app_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode()) 
             
 
     def create_child(self):
         if len(self.parent_pid) != 0:
             system = platform.system()
             if system == "Windows":
-                parent = subprocess.Popen('python app\example.py', cwd=os.path.dirname(os.path.realpath(__file__)))
+                child = subprocess.Popen('python app\example.py', cwd=os.path.dirname(os.path.realpath(__file__)))
             else:
-                parent = subprocess.Popen(['python', 'app/example.py'])
-            self.child_pids.append(parent.pid)
-            print('pid del hijo: ', parent.pid)
+                child = subprocess.Popen(['python', 'app/example.py'])
+            self.child_pids.append(child.pid)
+            cmd = 'send'
+            origin = 'app_module'
+            destiny = 'gui_module'
+            msg = ' Log: ' + str(datetime.now()) + '-> success create_child_app ' + str(child.pid)
+            self.app_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode())
         else:
-            print('could not create child, parent not found')
+            cmd = 'send'
+            origin = 'app_module'
+            destiny = 'gui_module'
+            msg = ' Log: ' + str(datetime.now()) + '-> failed create_child_app '
+            self.app_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode())
 
     def delete_app(self, pid):
 
@@ -93,15 +112,31 @@ class APP_MODULE:
                 for i in self.child_pids:
                     p_c = psutil.Process(i)
                     p_c.terminate()
-                    print('se murio el hijo: ', i)
+                    cmd = 'send'
+                    origin = 'app_module'
+                    destiny = 'gui_module'
+                    msg = ' Log: ' + str(datetime.now()) + '-> success kill_child_app ' +  str(i)
+                    self.app_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode())
                 for i in self.child_pids:
                     self.child_pids.remove(i)
             self.parent_pid.remove(pid)
-            print('Se murio el padre : ', pid)
+            cmd = 'send'
+            origin = 'app_module'
+            destiny = 'gui_module'
+            msg = ' Log: ' + str(datetime.now()) + '-> success kill_parent_app ' +  str(pid)
+            self.app_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode())
         elif pid in self.child_pids:
             p = psutil.Process(pid)
             p.terminate()
-            print('se murio el hijo: ', pid)
+            cmd = 'send'
+            origin = 'app_module'
+            destiny = 'gui_module'
+            msg = ' Log: ' + str(datetime.now()) + '-> success kill_child_app ' +  str(pid)
+            self.app_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode())
             self.child_pids.remove(pid)
         else:
-            print('Error: no hay un proceso con ese nombre')
+            cmd = 'send'
+            origin = 'app_module'
+            destiny = 'gui_module'
+            msg = ' Log: ' + str(datetime.now()) + '-> failed no_app '
+            self.app_client.send((self.msg_structure.format(cmd, origin, destiny, msg)).encode())

@@ -41,7 +41,9 @@ class GUI_MODULE:
             response = self.gui_client.recv(1024).decode('utf-8')
             origin = response.split(',')[1].split(':')[1]
             if origin == "file_module":
-                self.messages_file_kernel.set(response)
+                self.messages_file_kernel.set(response.split(',')[3])
+            elif origin == 'app_module':
+                self.messages_app_kernel.set(response.split(',')[3])
 
     def stop_gui(self):
         print('Stopping gui')
@@ -80,8 +82,6 @@ class GUI_MODULE:
         self.gui_client.send(self.msg_structure.format(cmd, origin, destiny, msg).encode())
         self.messages_gui_kernel.set(self.msg_structure.format(cmd, origin, destiny, msg))
 
-
-    # AQUI puede fallar
     def create_dir(self, dir_name):
         print('Creating Dir')
         cmd = 'info'
@@ -190,21 +190,25 @@ class GUI_MODULE:
         self.wrapper3.pack(fill='both', expand="yes", padx=20, pady=10)
 
         self.messages_gui_kernel_title = Label(self.wrapper3, text="Mensajes Gui", font="Times 20")
-        self.messages_gui_kernel_title.place(x=40, y=20, width=300, height=50)
+        self.messages_gui_kernel_title.place(x=0, y=20, width=300, height=50)
 
         self.messages_gui_kernel = StringVar()
         self.messages_gui_kernel_label = Label(self.wrapper3, textvariable=self.messages_gui_kernel, font="Times 7")
-        self.messages_gui_kernel_label.place(x=0, y=80, width=400, height=30)
+        self.messages_gui_kernel_label.place(x=0, y=80, width=260, height=30)
 
         self.messages_file_kernel_title = Label(self.wrapper3, text="Mensajes File", font="Times 20")
-        self.messages_file_kernel_title.place(x=420, y=20, width=300, height=50)
+        self.messages_file_kernel_title.place(x=340, y=20, width=300, height=50)
 
         self.messages_file_kernel = StringVar()
         self.messages_file_kernel_label = Label(self.wrapper3, textvariable=self.messages_file_kernel, font="Times 7")
-        self.messages_file_kernel_label.place(x=350, y=80, width=500, height=30)
+        self.messages_file_kernel_label.place(x=280, y=80, width=440, height=30)
 
         self.messages_app_kernel_title = Label(self.wrapper3, text="Mensajes App", font="Times 20")
-        self.messages_app_kernel_title.place(x=860, y=20, width=200, height=50)
+        self.messages_app_kernel_title.place(x=800, y=20, width=200, height=50)
+
+        self.messages_app_kernel = StringVar()
+        self.messages_app_kernel_label = Label(self.wrapper3, textvariable=self.messages_app_kernel, font="Times 7")
+        self.messages_app_kernel_label.place(x=650, y=80, width=500, height=30)
 
         # Wrapper 4 - Close Button
         def quit_clicked():

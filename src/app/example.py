@@ -17,7 +17,6 @@ class AppExample:
         label.place(x=150, y=100, width=300, height=60)
 
         window.mainloop()
-        #print('App: ---> pid: %s, parent: %s' %(self.pid, self.ppid))
 
 if __name__ == "__main__":
     AppExample().graphic()

@@ -31,21 +31,19 @@ class Kernel:
             self.file_socket.connect((self.host, self.file_port))
             self.app_socket.connect((self.host, self.app_port))
 
-            self.gui_handle_thread = Thread(target=self.gui_handler, args=())
-            self.gui_handle_thread.start()
+            self.connection_handle_thread = Thread(target=self.connection_handler, args=())
+            self.connection_handle_thread.start()
 
-            self.gui_handle_thread.join()
+            self.connection_handle_thread.join()
 
         except socket.error as e:
             print(str(e))
 
-    def gui_handler(self):
+    def connection_handler(self):
         connected = True
 
         while connected:
-            print('Buenardo')
             msg = self.gui_socket.recv(1024).decode('utf-8')
-            print('Gui Message: ' + msg)
             arguments = msg.split(',')
             cmd = arguments[0].split(':')[1]
             dst = arguments[2].split(':')[1]
@@ -54,12 +52,13 @@ class Kernel:
                 if dst == "file_module":
                     self.file_socket.send(msg.encode())
                     response = self.file_socket.recv(1024).decode()
-                    print('Response:' + response)
                     self.gui_socket.send(response.encode())
+                    self.file_socket.send(response.encode())
                 elif dst == "app_module":
                     self.app_socket.send(msg.encode())
                     response = self.app_socket.recv(1024).decode()
-                    print('Holis: '+response)
+                    self.gui_socket.send(response.encode())
+                    self.file_socket.send(response.encode())
                 elif dst == "kernel":
                     if arguments[3].split(':')[1] == "halt":
                         connected = False
